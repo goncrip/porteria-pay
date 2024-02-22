@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorteriaFunction", "PorteriaFunction\PorteriaFunction.csproj", "{EEB67639-7F71-4C74-8C91-8DFC40BF4F31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{E7B9064C-E1B0-4A45-B7D3-FE3916886313}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EEB67639-7F71-4C74-8C91-8DFC40BF4F31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEB67639-7F71-4C74-8C91-8DFC40BF4F31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEB67639-7F71-4C74-8C91-8DFC40BF4F31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEB67639-7F71-4C74-8C91-8DFC40BF4F31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7B9064C-E1B0-4A45-B7D3-FE3916886313}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7B9064C-E1B0-4A45-B7D3-FE3916886313}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7B9064C-E1B0-4A45-B7D3-FE3916886313}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7B9064C-E1B0-4A45-B7D3-FE3916886313}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {248DFA8F-995D-44D1-A386-BDCBE79949B9}
+	EndGlobalSection
+EndGlobal

@@ -230,5 +230,158 @@ namespace PorteriaFunction
 
             return new OkObjectResult(vehiculos);
         }
+
+        [FunctionName("AddIngreso")]
+        public async Task<IActionResult> AddIngresoAsync(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            var data = JsonConvert.DeserializeObject<IngresoDTO>(requestBody);
+           
+            var ingreso = new Ingreso()
+            {
+                FechaIngreso = DateTime.Now.ToUniversalTime(),
+                IdEmpresa = data.IdEmpresa,
+                IdVehiculo = data.IdVehiculo,
+                IdPersona = data.IdPersona,
+                IdTipoCarga = data.IdTipoCarga,
+                Peso = data.Peso
+            };
+
+            porteriaContext.Ingresos.Add(ingreso);
+            await porteriaContext.SaveChangesAsync();
+            
+            return new OkObjectResult("OK");
+        }
+
+        [FunctionName("UpdateEgreso")]
+        public async Task<IActionResult> UpdateEgresoAsync(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            var idIngreso = Convert.ToInt32(req.Query["idIngreso"]);
+            
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            var ingreso = await porteriaContext
+                            .Ingresos
+                            .Where(x => x.IdIngreso == idIngreso && x.FechaEgreso == null)
+                            .FirstOrDefaultAsync();
+
+            if (ingreso != null)
+            {
+                ingreso.FechaEgreso = DateTime.Now.ToUniversalTime();
+
+                await porteriaContext.SaveChangesAsync();
+            }
+            else
+            {
+                return new BadRequestObjectResult("No se encontró un ingreso sin fecha de egreso.");
+            }
+
+            return new OkObjectResult("OK");
+        }
+
+        [FunctionName("GetEgresosPendientes")]
+        public async Task<IActionResult> GetEgresosPendientesAsync(
+           [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+           ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            string matricula = req.Query["matricula"];
+            string pais = req.Query["pais"];
+
+            var vehiculo = await porteriaContext
+                                  .Vehiculos
+                                  .Where(x => x.Matricula == matricula && 
+                                              x.Pais == pais)
+                                  .FirstOrDefaultAsync();
+
+            if (vehiculo != null)
+            {
+                var ingresos = await porteriaContext.Ingresos.Where(x => x.IdVehiculo == vehiculo.IdVehiculo && x.FechaEgreso == null).Select(x => new
+                {
+                    x.IdIngreso,
+                    x.FechaIngreso
+                }).ToListAsync();
+
+                return new OkObjectResult(ingresos);
+            }
+
+            return new BadRequestObjectResult($"No se encontró un ingreso pendiente para la matricula {pais} - {matricula}.");
+        }
+
+        [FunctionName("GetIngresos")]
+        public async Task<IActionResult> GetIngresosAsync(
+           [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+           ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            DateTime from = Convert.ToDateTime(req.Query["desde"]);
+            DateTime to = Convert.ToDateTime(req.Query["to"]);
+            int idEmpresa = Convert.ToInt32(req.Query["idempresa"]);
+            int idVehiculo = Convert.ToInt32(req.Query["idvehiculo"]);
+            int idPersona = Convert.ToInt32(req.Query["idpersona"]);
+            int idTipoCarga = Convert.ToInt32(req.Query["idtipocarga"]);
+
+            var q = porteriaContext
+                    .Ingresos
+                    .Where(x => x.FechaIngreso >= from && 
+                        x.FechaIngreso <= to)
+                    .AsQueryable();
+
+            if (idEmpresa > 0)
+            {
+                q = q.Where(x => x.IdEmpresa == idEmpresa);
+            }
+
+            if (idVehiculo > 0)
+            {
+                q = q.Where(x => x.IdVehiculo == idVehiculo);
+            }
+
+            if (idPersona > 0)
+            {
+                q = q.Where(x => x.IdPersona == idPersona);
+            }
+
+            if (idTipoCarga > 0)
+            {
+                q = q.Where(x => x.IdTipoCarga == idTipoCarga);
+            }
+
+            var query = from q1 in q
+                        join e in porteriaContext.Empresas
+                        on q1.IdEmpresa equals e.IdEmpresa
+                        join v in porteriaContext.Vehiculos
+                        on q1.IdVehiculo equals v.IdVehiculo
+                        join p in porteriaContext.Personas
+                        on q1.IdPersona equals p.IdPersona
+                        join t in porteriaContext.TipoCargas
+                        on q1.IdTipoCarga equals t.IdTipoCarga
+                        select new ConsultaIngresoDTO()
+                        {
+                            Apellidos = p.Apellidos,
+                            Documento = p.Documento,
+                            Empresa = e.Nombre,
+                            FechaEgreso = q1.FechaEgreso,
+                            FechaIngreso = q1.FechaIngreso,
+                            Matricula = v.Matricula,
+                            Nombres = p.Nombres,
+                            PaisMatricula = v.Pais,
+                            Peso = q1.Peso ?? 0,
+                            TipoCarga = t.Descripcion
+                        };
+
+            return new OkObjectResult(await query.ToListAsync());
+        }
     }
 }

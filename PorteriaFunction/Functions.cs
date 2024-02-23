@@ -325,7 +325,7 @@ namespace PorteriaFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            DateTime from = Convert.ToDateTime(req.Query["desde"]);
+            DateTime from = Convert.ToDateTime(req.Query["from"]);
             DateTime to = Convert.ToDateTime(req.Query["to"]);
             int idEmpresa = Convert.ToInt32(req.Query["idempresa"]);
             int idVehiculo = Convert.ToInt32(req.Query["idvehiculo"]);

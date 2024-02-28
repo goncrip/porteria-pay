@@ -8,8 +8,6 @@ namespace PorteriaFunction.DTO
 {
     public class IngresoDTO
     {
-        public DateTime FechaIngreso { get; set; }
-        public DateTime? FechaEgreso { get; set; }
         public int IdEmpresa { get; set; }
         public int IdVehiculo { get; set; }
         public int IdPersona { get; set; }

@@ -118,16 +118,14 @@ namespace PorteriaFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string documento = req.Query["documento"];
-
-            var personas = await porteriaContext.Personas.Where(x => x.Documento == documento).Select(x => new
+            var personas = await porteriaContext.Personas.Select(x => new
             {
                 x.IdPersona,
                 x.Celular,
                 x.Apellidos,
                 x.Documento,
                 x.TipoDocumento,
-                x.Nombres,
+                Nombres = $"{x.Pais} {x.Documento} {x.Nombres} {x.Apellidos}",
                 x.Pais
             }).ToListAsync();
 
@@ -169,8 +167,6 @@ namespace PorteriaFunction
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-
-            string documento = req.Query["documento"];
 
             var personas = await porteriaContext.TipoCargas.Select(x => new
             {
@@ -219,9 +215,7 @@ namespace PorteriaFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string matricula = req.Query["matricula"];
-
-            var vehiculos = await porteriaContext.Vehiculos.Where(x => x.Matricula == matricula).Select(x => new
+            var vehiculos = await porteriaContext.Vehiculos.Select(x => new
             {
                 x.IdVehiculo,
                 x.Matricula,
@@ -334,8 +328,8 @@ namespace PorteriaFunction
 
             var q = porteriaContext
                     .Ingresos
-                    .Where(x => x.FechaIngreso >= from && 
-                        x.FechaIngreso <= to)
+                    .Where(x => x.FechaIngreso.Date >= from.Date && 
+                        x.FechaIngreso.Date <= to.Date)
                     .AsQueryable();
 
             if (idEmpresa > 0)
@@ -358,6 +352,8 @@ namespace PorteriaFunction
                 q = q.Where(x => x.IdTipoCarga == idTipoCarga);
             }
 
+            const string format = "dd/MM/yyyy HH:mm:ss";
+
             var query = from q1 in q
                         join e in porteriaContext.Empresas
                         on q1.IdEmpresa equals e.IdEmpresa
@@ -372,8 +368,8 @@ namespace PorteriaFunction
                             Apellidos = p.Apellidos,
                             Documento = p.Documento,
                             Empresa = e.Nombre,
-                            FechaEgreso = q1.FechaEgreso,
-                            FechaIngreso = q1.FechaIngreso,
+                            FechaEgreso = q1.FechaEgreso.HasValue ? q1.FechaEgreso.Value.AddHours(-3).ToString(format) : null,
+                            FechaIngreso = q1.FechaIngreso.AddHours(-3).ToString(format),
                             Matricula = v.Matricula,
                             Nombres = p.Nombres,
                             PaisMatricula = v.Pais,

@@ -8,8 +8,8 @@ namespace PorteriaFunction.DTO
 {
     public class ConsultaIngresoDTO
     {
-        public DateTime FechaIngreso { get; set; }
-        public DateTime? FechaEgreso { get; set; }
+        public string FechaIngreso { get; set; }
+        public string FechaEgreso { get; set; }
         public string Empresa { get; set; }
         public string Matricula { get; set; }
         public string PaisMatricula { get;set; }

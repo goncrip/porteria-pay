@@ -17,6 +17,7 @@ namespace PorteriaFunction
     public class Functions
     {
         private readonly PorteriaContext porteriaContext;
+        const string format = "dd/MM/yyyy HH:mm:ss";
 
         public Functions(PorteriaContext porteriaContext)
         {
@@ -289,27 +290,17 @@ namespace PorteriaFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string matricula = req.Query["matricula"];
-            string pais = req.Query["pais"];
+            var q = from i in porteriaContext.Ingresos
+                    join v in porteriaContext.Vehiculos
+                    on i.IdVehiculo equals v.IdVehiculo
+                    where i.FechaEgreso == null
+                    select new
+                    {
+                        i.IdIngreso,
+                        Descripcion = $"{v.Pais} - {v.Matricula} - {i.FechaIngreso.AddHours(-3).ToString(format)}"
+                    };
 
-            var vehiculo = await porteriaContext
-                                  .Vehiculos
-                                  .Where(x => x.Matricula == matricula && 
-                                              x.Pais == pais)
-                                  .FirstOrDefaultAsync();
-
-            if (vehiculo != null)
-            {
-                var ingresos = await porteriaContext.Ingresos.Where(x => x.IdVehiculo == vehiculo.IdVehiculo && x.FechaEgreso == null).Select(x => new
-                {
-                    x.IdIngreso,
-                    x.FechaIngreso
-                }).ToListAsync();
-
-                return new OkObjectResult(ingresos);
-            }
-
-            return new BadRequestObjectResult($"No se encontró un ingreso pendiente para la matricula {pais} - {matricula}.");
+           return new OkObjectResult(await q.ToListAsync());
         }
 
         [FunctionName("GetIngresos")]
@@ -351,8 +342,6 @@ namespace PorteriaFunction
             {
                 q = q.Where(x => x.IdTipoCarga == idTipoCarga);
             }
-
-            const string format = "dd/MM/yyyy HH:mm:ss";
 
             var query = from q1 in q
                         join e in porteriaContext.Empresas
